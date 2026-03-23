@@ -16,20 +16,40 @@ public class AntiCheatEngine {
 
     public RiskResult evaluate(Action action) {
 
+        // Ensure player record exists
         records.putIfAbsent(action.playerId, new PlayerRecord());
         PlayerRecord record = records.get(action.playerId);
 
+        // Check all rules
         for (CheatRule rule : rules) {
+
             if (rule.check(action, record)) {
+
+                // Increase violation count
                 record.violations++;
 
-                if (record.violations >= 3)
+                // Create violation object
+                RuleViolation violation = new RuleViolation(
+                        action.playerId,
+                        rule.getName(),
+                        SeverityLevel.HIGH,
+                        action.timestamp,
+                        action.value
+                );
+
+                // Log violation to file
+                ViolationLogger.log(violation);
+
+                // Decide status
+                if (record.violations >= 3) {
                     return new RiskResult(action.playerId, "BLOCKED", rule.getName());
-                else
+                } else {
                     return new RiskResult(action.playerId, "SUSPICIOUS", rule.getName());
+                }
             }
         }
 
+        // If no rule triggered
         return new RiskResult(action.playerId, "SAFE", "NONE");
     }
 }
