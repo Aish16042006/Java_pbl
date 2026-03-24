@@ -18,7 +18,7 @@ public class GameServer implements Runnable {
 
     @Override
     public void run() {
-        System.out.println("🚀 Server Started");
+        System.out.println("Server Started");
 
         while (running) {
             Action action = queue.dequeue();
